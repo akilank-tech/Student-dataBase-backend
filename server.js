@@ -21,87 +21,89 @@ app.post("/addstudent", async (req, res) => {
     const newStudent = new Student({
         name: req.body.name,
         age: req.body.age,
-        course:req.body.course,
-        status:req.body.status
+        course: req.body.course,
+        status: req.body.status
     })
     await newStudent.save()
     res.send("Student Added Successfully.")
 })
 
-app.post("/addstudents",async (req,res)=>{
+app.post("/addstudents", async (req, res) => {
     await Student.insertMany(req.body)
     res.send("Multible Students Added.")
 })
 
-app.get("/students",async (req,res)=>{
-    const studentList= await Student.find()
+app.get("/students", async (req, res) => {
+    const studentList = await Student.find()
     res.send(studentList)
 })
 
-app.get("/search/:course",async(req,res)=>{
+app.get("/search/:course", async (req, res) => {
     const result = await Student.find({
-        course:req.params.course
+        course: req.params.course
     })
     res.send(result)
 })
 
-app.put("/update/:id", async (req,res)=>{
+app.put("/update/:id", async (req, res) => {
     await Student.findByIdAndUpdate(
-        req.params.id,{status:req.body.status}
+        req.params.id, { status: req.body.status }
     )
     res.send("Student Updated Successfully.")
 })
 
-app.put("/updateall",async (req,res)=>{
+app.put("/updateall", async (req, res) => {
     await Student.updateMany(
-        {status:"Active"},
-        {$set:{status:"Completed"}}
+        { status: "Active" },
+        { $set: { status: "Completed" } }
     )
     res.send("All Active Students Updated.")
 })
 
-app.delete("/delete/:id",async (req,res)=>{
+app.delete("/delete/:id", async (req, res) => {
     await Student.findByIdAndDelete(req.params.id)
     res.send("Student Deleted Successfully.")
 })
 
-app.delete("/deleteall", async (req,res)=>{
+app.delete("/deleteall", async (req, res) => {
     await Student.deleteMany({})
     res.send("All Students Deleted.")
 })
 
-app.get("/operators/:type",async (req,res)=>{
-    const type =req.params.type
-    let result =[]
-    if (type === "gt"){
-        result =await Student.find({age:{$gt:18}})
+app.get("/operators/:type", async (req, res) => {
+    const type = req.params.type
+    let result = []
+    if (type === "gt") {
+        result = await Student.find({ age: { $gt: 18 } })
     }
-    else if(type === "lt"){
-        result =await Student.find({age:{$lt:25}})
+    else if (type === "lt") {
+        result = await Student.find({ age: { $lt: 25 } })
     }
-    else if(type === "in"){
-        result= await Student.find({course:{$in:["MERN Stack","React JS"]}})
+    else if (type === "in") {
+        result = await Student.find({ course: { $in: ["MERN Stack", "React JS"] } })
     }
-    else if (type === "and"){
-        result = await Student.find({$and:[{age:{$gt:18}},
-            {status:"Active"}
-        ]})
-    }
-    else if (type==="or"){
+    else if (type === "and") {
         result = await Student.find({
-            $or:[
-                {course:"MERN Stack"},
-                {course:"React JS"}
+            $and: [{ age: { $gt: 18 } },
+            { status: "Active" }
             ]
         })
     }
-    else if (type==="exists"){
-        result=await Student.find({
-           status:{$exists: true}
+    else if (type === "or") {
+        result = await Student.find({
+            $or: [
+                { course: "MERN Stack" },
+                { course: "React JS" }
+            ]
+        })
+    }
+    else if (type === "exists") {
+        result = await Student.find({
+            status: { $exists: true }
         })
     }
     res.send(result)
 })
-app.listen(5000,()=>{
+app.listen(5000, "0.0.0.0", () => {
     console.log("Server Running on Port 5000")
 })
