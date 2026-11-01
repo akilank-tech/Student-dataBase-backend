@@ -8,8 +8,8 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
-
-mongoose.connect("mongodb://127.0.0.1:27017/student")
+require("dotenv").config()
+mongoose.connect(process.env.MONGO_URI)
 
     .then(() => {
         console.log("MongoDB Connected Successfully")
@@ -104,6 +104,7 @@ app.get("/operators/:type", async (req, res) => {
     }
     res.send(result)
 })
-app.listen(5000, "0.0.0.0", () => {
-    console.log("Server Running on Port 5000")
+const PORT = process.env.PORT
+app.listen(PORT, () => {
+    console.log(`Server Running on Port ${PORT}`)
 })
