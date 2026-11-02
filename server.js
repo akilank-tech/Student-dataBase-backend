@@ -46,10 +46,47 @@ app.get("/search/:course", async (req, res) => {
 })
 
 app.put("/update/:id", async (req, res) => {
-    await Student.findByIdAndUpdate(
-        req.params.id, { status: req.body.status }
-    )
-    res.send("Student Updated Successfully.")
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid student ID." })
+        }
+
+        const updates = {}
+        for (const field of ["name", "age", "course", "status"]) {
+            if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+                updates[field] = req.body[field]
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ message: "No student fields provided." })
+        }
+
+        if (Object.prototype.hasOwnProperty.call(updates, "age")) {
+            const age = Number(updates.age)
+            if (!Number.isFinite(age) || age < 1) {
+                return res.status(400).json({ message: "Age must be a positive number." })
+            }
+            updates.age = age
+        }
+
+        const student = await Student.findByIdAndUpdate(
+            req.params.id,
+            { $set: updates },
+            { new: true, runValidators: true }
+        )
+        if (!student) {
+            return res.status(404).json({ message: "Student not found." })
+        }
+
+        return res.status(200).json({
+            ...student.toObject(),
+            _id: String(student._id)
+        })
+    } catch (error) {
+        console.error("Student update failed:", error)
+        return res.status(500).json({ message: "Unable to update student." })
+    }
 })
 
 app.put("/updateall", async (req, res) => {
